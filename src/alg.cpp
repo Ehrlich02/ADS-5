@@ -1,107 +1,97 @@
 // Copyright 2021 NNTU-CS
+#include <iostream>
 #include <string>
 #include <map>
 #include "tstack.h"
 
-int prior(char operation) {
-  switch (operation) {
-    case '(':
-      return 0;
-    case ')':
-      return 1;
-    case '+':
-      return 2;
-    case '-':
-      return 2;
-    case '/':
-      return 3;
-    case '*':
-      return 3;
-    case " :
-      return 5;
+int ShowPrior(char prior) {
+    switch (prior) {
+    case '(': return 0;
+    case ')': return 1;
+    case '+': return 2;
+    case '-': return 2;
+    case '*': return 3;
+    case '/': return 3;
     default:
-      return 4;
-  }
+        return -1;
+    }
 }
 
-int calculate(char operation, int per1, int per2) {
-  switch (operation) {
-      case '+':
-        return per2 + per1;
-      case '-':
-        return per2 - per1;
-      case '*':
-        return per1 * per2;
-      case '/':
-        if (per1 != 0)
-          return per2 / per1;
-      default:
-        return 0;
-  }
+int Execute(char operation, int first, int second) {
+    switch (operation) {
+    case '+':
+        return first + second;
+        break;
+    case '-':
+        return first - second;
+        break;
+    case '*':
+        return first * second;
+        break;
+    case '/':
+        return first / second;
+        break;
+    default: return 0;
+    }
 }
-
 std::string infx2pstfx(std::string inf) {
-  // добавьте код
-  return std::string("");
-  std::string post;
-  char prob = ' ';
-  TStack <char, 100> stack1;
-  for (int i = 0; i < inf.size(); i++) {
-    if (prior(inf[i]) == 4) {
-      post.push_back(inf[i]);
-      post.push_back(prob);
-    } else {
-      if (prior(inf[i]) == 0) {
-        stack1.push(inf[i]);
-      } else if (stack1.isEmpty()) {
-        stack1.push(inf[i]);
-      } else if ((prior(inf[i]) > prior(stack1.get()))) {
-        stack1.push(inf[i]);
-      } else if (prior(inf[i]) == 1) {
-        while (prior(stack1.get()) != 0) {
-          post.push_back(stack1.get());
-          post.push_back(prob);
-          stack1.pop();
+    char start = 0;
+    TStack <char, 100> stack1;
+    std::string str;
+    for (int i = 0; i < inf.length(); i++) {
+        int Prior = ShowPrior(inf[i]);
+        if (Prior > -1) {
+            if ((Prior == 0 || Prior > ShowPrior(start) ||
+                stack1.isEmpty()) && inf[i] != ')') {
+                if (stack1.isEmpty())
+                    start = inf[i];
+                stack1.push(inf[i]);
+            } else if (inf[i] == ')') {
+                while (stack1.get() != '(') {
+                    str.push_back(stack1.get());
+                    str.push_back(' ');
+                    stack1.pop();
+                }
+                stack1.pop();
+                if (stack1.isEmpty())
+                    start = 0;
+            } else {
+                while (!stack1.isEmpty() && ShowPrior(stack1.get()) >= Prior) {
+                    str.push_back(stack1.get());
+                    str.push_back(' ');
+                    stack1.pop();
+                }
+                if (stack1.isEmpty())
+                    start = inf[i];
+                stack1.push(inf[i]);
+            }
+        } else {
+            str.push_back(inf[i]);
+            str.push_back(' ');
         }
+    }
+    while (!stack1.isEmpty()) {
+        str.push_back(stack1.get());
+        str.push_back(' ');
         stack1.pop();
-      } else {
-        while (!stack1.isEmpty() && (prior(inf[i]) <= prior(stack1.get()))) {
-          post.push_back(stack1.get());
-          post.push_back(prob);
-          stack1.pop();
-        }
-        stack1.push(inf[i]);
-      }
     }
-  }
-  while (!stack1.isEmpty()) {
-    post.push_back(stack1.get());
-    post.push_back(prob);
-    stack1.pop();
-  }
-  for (int j = 0; j < post.size(); j++) {
-    if (post[post.size()-1] == ' ')
-      post.erase(post.size()-1);
-  }
-  return post;
+    str.erase(str.end() - 1, str.end());
+    return str;
 }
-
-int eval(std::string pref) {
-  // добавьте код
-  return 0;
-  TStack <int, 100> stack2;
-  int result = 0;
-  for (int i = 0; i < pref.size(); i++) {
-    if (prior(pref[i]) == 4) {
-      stack2.push(pref[i] - '0');
-    } else if (prior(pref[i]) < 4) {
-      int a = stack2.get();
-      stack2.pop();
-      int b = stack2.get();
-      stack2.pop();
-      stack2.push(calculate(pref[i], a, b));
+int eval(std::string post) {
+    TStack <int, 100> stack2;
+    int res = 0, first = 0, second = 0;
+    for (int i = 0; i < post.length(); i++) {
+        if ((ShowPrior(post[i]) == -1) && post[i] != ' ') {
+            stack2.push(post[i] - '0');
+        } else if (ShowPrior(post[i]) > 1) {
+            second = stack2.get();
+            stack2.pop();
+            first = stack2.get();
+            stack2.pop();
+            stack2.push(Execute(post[i], first, second));
+        }
     }
-  }
-  result = stack2.get();
-  return result;
+    res = stack2.get();
+    return res;
 }
