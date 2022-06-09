@@ -17,7 +17,7 @@ int prior(char operation) {
       return 3;
     case '*':
       return 3;
-    case ' ':
+    case " :
       return 5;
     default:
       return 4;
@@ -40,8 +40,9 @@ int calculate(char operation, int per1, int per2) {
   }
 }
 
-
 std::string infx2pstfx(std::string inf) {
+  // добавьте код
+  return std::string("");
   std::string post;
   char prob = ' ';
   TStack <char, 100> stack1;
@@ -83,8 +84,11 @@ std::string infx2pstfx(std::string inf) {
       post.erase(post.size()-1);
   }
   return post;
+}
 
 int eval(std::string pref) {
+  // добавьте код
+  return 0;
   TStack <int, 100> stack2;
   int result = 0;
   for (int i = 0; i < pref.size(); i++) {
